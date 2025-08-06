@@ -1,0 +1,132 @@
+## 1. **Objective**
+
+To ensure comprehensive functional, security, and performance validation of the [Restful Booker API](https://restful-booker.herokuapp.com/apidoc/index.html), 
+covering the full set of CRUD operations and authentication mechanisms.
+
+URL : https://restful-booker.herokuapp.com/apidoc/index.html
+
+---
+
+## 2. **Scope**
+
+### ✔️ In Scope:
+
+* Functional Testing of all endpoints (GET, POST, PUT, PATCH, DELETE)
+* Authentication and Token validation
+* Input validation and boundary testing
+* Security checks (unauthorized access, SQL injection, etc.)
+* Performance testing under load using Postman/Apache JMeter
+* Error handling verification
+
+### ❌ Out of Scope:
+
+* UI Testing (since it's an API-based project)
+* Payment gateway integration
+
+---
+
+## 3. **Test Environment**
+
+| Environment | URL                                                                                                              |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| QA          | (https://restful-booker.herokuapp.com/apidoc/index.html) 
+| Tools Used  | Postman, JIRA, Excel, REST Assured, IntelliJ, JMeter (for load)                                                  |
+| OS/Browser  | Windows 10, macOS, Chrome, Firefox, Edge, Safari                                                                 |
+
+---
+
+## 4. **Test Scenarios**
+
+| Scenario ID | Feature                 | Description                                   | Type        |
+| ----------- | ----------------------- | --------------------------------------------- | ----------- |
+| TC01        | Auth - CreateToken      | Verify valid token creation using credentials | Functional  |
+| TC02        | Auth - CreateToken      | Token should not generate with wrong password | Negative    |
+| TC03        | Booking - CreateBooking | Booking creation with valid data              | Functional  |
+| TC04        | Booking - GetBookingIds | Retrieve all booking IDs                      | Functional  |
+| TC05        | Booking - GetBooking    | Retrieve booking by ID                        | Functional  |
+| TC06        | Booking - UpdateBooking | Update booking with token authentication      | Integration |
+| TC07        | Booking - DeleteBooking | Delete booking with token                     | Security    |
+| TC08        | Ping                    | API health check                              | Smoke       |
+| TC09        | Booking - Invalid ID    | Retrieve booking with non-existent ID         | Negative    |
+| TC10        | Boundary Values         | Check min/max price fields                    | Boundary    |
+
+---
+
+## 5. **Test Data**
+
+Example for `CreateBooking`:
+{
+    "firstname": "Jim",
+    "lastname": "Brown",
+    "totalprice": 111,
+    "depositpaid": true,
+    "bookingdates": {
+        "checkin": "2024-01-01",
+        "checkout": "2024-01-05"
+    },
+    "additionalneeds": "Breakfast"
+}
+
+## 6. **Entry & Exit Criteria**
+
+### ✅ Entry:
+
+* API endpoint is live and accessible
+* API documentation is available
+* Required test data is prepared
+
+### ✅ Exit:
+
+* All planned test cases are executed
+* All high/critical bugs are resolved or documented
+* Test summary report is submitted
+
+---
+
+## 7. **Test Deliverables**
+
+* Test Plan Document
+* Test Scenarios and Test Cases (Excel or TestRail)
+* Bug Report (via JIRA)
+* Test Summary Report
+* Postman Collections
+
+---
+
+## 8. **Defect Reporting**
+
+* All bugs will be raised in **JIRA**
+* Categorized as: Blocker, Critical, Major, Minor
+* Logged with: Steps to reproduce, Actual vs Expected Result, Screenshots
+
+---
+
+## 9. **Risks & Mitigations**
+
+| Risk                                 | Mitigation                            |
+| ------------------------------------ | ------------------------------------- |
+| API server downtime                  | Report issue to DevOps & retest later |
+| Authentication token expires quickly | Use new token per session             |
+| Last-minute requirement changes      | Keep test cases flexible & modular    |
+
+---
+
+## 10. **Tools Used**
+
+* Postman – API Testing
+* REST Assured – Automation
+* JIRA – Bug Tracking
+* Excel/TestRail – Test Case Management
+* JMeter – Load Testing
+
+---
+
+✅ Sample Postman Request for Auth Token:
+POST https://restful-booker.herokuapp.com/auth
+Header: Content-Type: application/json
+
+Body:
+{
+  "username": "admin",
+  "password": "password123"
+}
