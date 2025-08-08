@@ -1,0 +1,161 @@
+# ✅ RESTful Booker API – Test Cases
+
+## 📋 General Information
+
+* **Base URL**: `https://restful-booker.herokuapp.com`
+* **Content-Type**: `application/json`
+* **Auth Token Required**: ✅ Yes – for PUT, PATCH, DELETE
+
+---
+
+## 🔁 1. Health Check – `/ping`
+
+| TC ID   | Test Case Description            | Method      | Expected Result       |
+| ------- | -------------------------------- | ----------- | --------------------- |
+| TC\_001 | Verify API health check endpoint | GET `/ping` | 201 Created or 200 OK |
+
+---
+
+## 🔐 2. Auth – `/auth`
+
+| TC ID   | Test Case Description                       | Method       | Payload                                              | Expected Result                      |
+| ------- | ------------------------------------------- | ------------ | ---------------------------------------------------- | ------------------------------------ |
+| TC\_002 | Generate token with valid credentials       | POST `/auth` | `{ "username": "admin", "password": "password123" }` | Status 200, returns token            |
+| TC\_003 | Fail token generation with invalid password | POST `/auth` | `{ "username": "admin", "password": "wrongpass" }`   | 200 OK, empty token or error message |
+| TC\_004 | Missing required fields                     | POST `/auth` | `{}`                                                 | 400 Bad Request                      |
+
+---
+
+## 📥 3. Create Booking – `/booking`
+
+| TC ID   | Test Case Description                     | Method          | Payload                 | Expected Result             |
+| ------- | ----------------------------------------- | --------------- | ----------------------- | --------------------------- |
+| TC\_005 | Create booking with valid data            | POST `/booking` | Valid JSON payload      | 200 OK, booking ID returned |
+| TC\_006 | Missing required fields (e.g., firstname) | POST `/booking` | Missing field(s)        | 400 Bad Request             |
+| TC\_007 | Invalid data type in totalprice           | POST `/booking` | `"totalprice": "abc"`   | 400 Bad Request             |
+| TC\_008 | Empty optional field (`additionalneeds`)  | POST `/booking` | `"additionalneeds": ""` | 200 OK                      |
+
+---
+
+## 📤 4. Get Booking(s) – `/booking` and `/booking/:id`
+
+| TC ID   | Test Case Description        | Method | Endpoint                                | Expected Result             |
+| ------- | ---------------------------- | ------ | --------------------------------------- | --------------------------- |
+| TC\_009 | Get all booking IDs          | GET    | `/booking`                              | 200 OK, list of booking IDs |
+| TC\_010 | Get booking by valid ID      | GET    | `/booking/1`                            | 200 OK, booking details     |
+| TC\_011 | Get booking by invalid ID    | GET    | `/booking/99999`                        | 404 Not Found               |
+| TC\_012 | Get booking filtered by name | GET    | `/booking?firstname=Jim&lastname=Brown` | 200 OK, filtered list       |
+
+---
+
+## 🛠️ 5. Update Booking – `/booking/:id` (PUT)
+
+| TC ID   | Test Case Description           | Method | Auth      | Payload       | Expected Result      |
+| ------- | ------------------------------- | ------ | --------- | ------------- | -------------------- |
+| TC\_013 | Update booking with valid token | PUT    | ✅ Yes     | Full object   | 200 OK               |
+| TC\_014 | Update booking without token    | PUT    | ❌ No      | Valid payload | 403 Forbidden        |
+| TC\_015 | Update with invalid token       | PUT    | ❌ Invalid | Valid payload | 403 Forbidden        |
+| TC\_016 | Update non-existent booking ID  | PUT    | ✅ Yes     | Valid payload | 404 Not Found or 405 |
+
+---
+
+## 🧩 6. Partial Update – `/booking/:id` (PATCH)
+
+| TC ID   | Test Case Description        | Method | Auth  | Payload                    | Expected Result |
+| ------- | ---------------------------- | ------ | ----- | -------------------------- | --------------- |
+| TC\_017 | Patch booking firstname      | PATCH  | ✅ Yes | `{ "firstname": "John" }`  | 200 OK          |
+| TC\_018 | Patch with invalid data type | PATCH  | ✅ Yes | `{ "totalprice": "free" }` | 400 Bad Request |
+| TC\_019 | Patch without token          | PATCH  | ❌ No  | Valid/Invalid Payload      | 403 Forbidden   |
+
+---
+
+## 🗑️ 7. Delete Booking – `/booking/:id`
+
+| TC ID   | Test Case Description           | Method | Auth  | Expected Result |
+| ------- | ------------------------------- | ------ | ----- | --------------- |
+| TC\_020 | Delete booking with valid token | DELETE | ✅ Yes | 201 Created     |
+| TC\_021 | Delete booking without token    | DELETE | ❌ No  | 403 Forbidden   |
+| TC\_022 | Delete non-existent booking ID  | DELETE | ✅ Yes | 405 or 404      |
+
+---
+
+## 🔐 8. Security Test Cases
+
+| TC ID   | Test Case Description                   | Method | Endpoint       | Expected Result     |
+| ------- | --------------------------------------- | ------ | -------------- | ------------------- |
+| TC\_023 | Access protected endpoint without token | PUT    | `/booking/:id` | 403 Forbidden       |
+| TC\_024 | Access with malformed token             | DELETE | `/booking/:id` | 403 Forbidden       |
+| TC\_025 | XSS injection in firstname              | POST   | `/booking`     | Script is sanitized |
+| TC\_026 | SQL injection in any field              | POST   | `/booking`     | 400 Bad Request     |
+
+---
+
+## 📉 9. Performance (Optional)
+
+| TC ID   | Test Case Description                      | Tool                  | Expected Result         |
+| ------- | ------------------------------------------ | --------------------- | ----------------------- |
+| TC\_027 | Run 100 concurrent GET `/booking` requests | JMeter                | All respond < 2 seconds |
+| TC\_028 | Create 50 bookings in 1 minute             | Script/Postman Runner | All succeed with 200 OK |
+
+---
+
+## 🧪 10. Additional Booking Validation Test Cases
+
+| TC ID   | Test Case Description                                 | Method          | Payload                                        | Expected Result                    |
+| ------- | ----------------------------------------------------- | --------------- | ---------------------------------------------- | ---------------------------------- |
+| TC\_029 | Create booking with empty JSON                        | POST `/booking` | `{}`                                           | 400 Bad Request                    |
+| TC\_030 | Create booking with special characters in `firstname` | POST `/booking` | `{ "firstname": "<script>alert(1)</script>" }` | 400 Bad Request or sanitized       |
+| TC\_031 | Create booking with `checkin` date after `checkout`   | POST `/booking` | Invalid date logic                             | 400 Bad Request                    |
+| TC\_032 | Create booking with past date                         | POST `/booking` | `checkin: "1990-01-01"`                        | 200 OK (depends on business logic) |
+| TC\_033 | Create booking with invalid date format               | POST `/booking` | `checkin: "01-01-2024"`                        | 400 Bad Request                    |
+| TC\_034 | Create booking with negative price                    | POST `/booking` | `totalprice: -500`                             | 400 Bad Request                    |
+
+---
+
+## 🔍 11. Boundary Testing
+
+| TC ID   | Test Case Description                           | Method          | Payload                | Expected Result                          |
+| ------- | ----------------------------------------------- | --------------- | ---------------------- | ---------------------------------------- |
+| TC\_035 | Create booking with very long `firstname`       | POST `/booking` | 1000+ characters       | 400 Bad Request or 413 Payload Too Large |
+| TC\_036 | Create booking with `totalprice` as 0           | POST `/booking` | `totalprice: 0`        | 200 OK or 400 depending on logic         |
+| TC\_037 | Create booking with extremely high `totalprice` | POST `/booking` | `totalprice: 99999999` | 200 OK                                   |
+
+---
+
+## ⚙️ 12. Header and Content-Type Validation
+
+| TC ID   | Test Case Description                 | Method          | Headers              | Expected Result            |
+| ------- | ------------------------------------- | --------------- | -------------------- | -------------------------- |
+| TC\_038 | Request without Content-Type header   | POST `/booking` | No `Content-Type`    | 415 Unsupported Media Type |
+| TC\_039 | Request with wrong Content-Type       | POST `/booking` | `text/plain`         | 415 Unsupported Media Type |
+| TC\_040 | Request with `application/xml` header | POST `/booking` | Not supported format | 415 Error                  |
+
+---
+
+## 🌐 13. Internationalization (i18n)
+
+| TC ID   | Test Case Description                  | Method          | Payload              | Expected Result              |
+| ------- | -------------------------------------- | --------------- | -------------------- | ---------------------------- |
+| TC\_041 | Create booking with Chinese characters | POST `/booking` | `"firstname": "张伟"`  | 200 OK                       |
+| TC\_042 | Create booking with Arabic characters  | POST `/booking` | `"lastname": "أحمد"` | 200 OK                       |
+| TC\_043 | Create booking with emojis in fields   | POST `/booking` | `"firstname": "😊"`  | 400 Bad Request or sanitized |
+
+---
+
+## 🔄 14. Idempotency & Repeatability
+
+| TC ID   | Test Case Description        | Method                | Payload      | Expected Result           |
+| ------- | ---------------------------- | --------------------- | ------------ | ------------------------- |
+| TC\_044 | Send same booking data twice | POST `/booking`       | Same payload | Two different booking IDs |
+| TC\_045 | Delete same booking twice    | DELETE `/booking/:id` | -            | First: 201, Second: 404   |
+
+---
+
+## 🔁 15. Token Expiry / Invalid Token
+
+| TC ID   | Test Case Description            | Method               | Auth          | Expected Result |
+| ------- | -------------------------------- | -------------------- | ------------- | --------------- |
+| TC\_046 | Use expired token                | PUT `/booking/:id`   | Expired       | 403 Forbidden   |
+| TC\_047 | Use token with invalid structure | PATCH `/booking/:id` | "abc.def.ghi" | 403 Forbidden   |
+
+---
